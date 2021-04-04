@@ -1,6 +1,7 @@
 package github.jackhenry.db;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -9,6 +10,7 @@ import java.util.List;
 import javax.naming.NamingException;
 import github.jackhenry.Util;
 import github.jackhenry.dto.CreateEmployeeDTO;
+import github.jackhenry.dto.UpdateEmployeeDTO;
 import github.jackhenry.model.Employee;
 
 public class DatabaseAccess {
@@ -90,12 +92,61 @@ public class DatabaseAccess {
       }
 
       try {
+         String sql = "INSERT INTO Employee (firstname, lastname) VALUES (?, ?)";
+         PreparedStatement statement =
+               DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+         statement.setString(1, firstname);
+         statement.setString(2, lastname);
+         statement.executeUpdate();
+         ResultSet generatedKey = statement.getGeneratedKeys();
+         generatedKey.next();
+         int id = generatedKey.getInt(1);
+         return new Employee(id, firstname, lastname);
+      } catch (SQLException | NamingException ex) {
+         ex.printStackTrace();
+         return null;
+      }
+   }
+
+   /**
+    * Delete a record from employee table by id
+    * 
+    * @param id the id of the record to be removed
+    * @return number of records successfully deleted
+    */
+   public Employee deleteEmployee(String id) {
+      try {
          Statement statement = DatabaseConnection.instance().createStatement();
-         String sql = "INSERT INTO Employee (firstname, lastname) VALUES ('" + firstname + "','"
-               + lastname + "')";
-         System.out.println(sql);
+         // Get the record being deleted
+         String select = "SELECT * FROM employee WHERE employee_id=" + id;
+         ResultSet rs = statement.executeQuery(select);
+         rs.next();
+         Employee employee = Employee.resultToEmployee(rs);
+         String sql = "DELETE FROM employee WHERE employee_id=" + id;
          statement.executeUpdate(sql);
-         return new Employee(firstname, lastname);
+         return employee;
+      } catch (SQLException | NamingException ex) {
+         ex.printStackTrace();
+         return null;
+      }
+   }
+
+   public Employee updateEmployee(UpdateEmployeeDTO dto) {
+      try {
+         String id = dto.getId();
+         String firstname = dto.getFirstname();
+         String lastname = dto.getLastname();
+         String sql = "UPDATE employee SET firstname=?, lastname=? WHERE employee_id=?";
+         PreparedStatement statement =
+               DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+         statement.setString(1, firstname);
+         statement.setString(2, lastname);
+         statement.setInt(3, Integer.parseInt(id));
+         statement.executeUpdate();
+         ResultSet generatedKey = statement.getGeneratedKeys();
+         generatedKey.next();
+         int generatedId = generatedKey.getInt(1);
+         return new Employee(generatedId, firstname, lastname);
       } catch (SQLException | NamingException ex) {
          ex.printStackTrace();
          return null;
