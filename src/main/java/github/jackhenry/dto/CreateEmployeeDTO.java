@@ -6,6 +6,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class CreateEmployeeDTO {
     private String firstname;
     private String lastname;
+    private String password;
+    private String employeeType;
 
     public String getFirstname() {
         return firstname;
@@ -21,5 +23,21 @@ public class CreateEmployeeDTO {
 
     public void setLastname(String lastname) {
         this.lastname = lastname;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getEmployeeType() {
+        return this.employeeType;
+    }
+
+    public void setEmployeeType(String employeeType) {
+        this.employeeType = employeeType;
     }
 }

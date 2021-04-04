@@ -60,7 +60,7 @@ public class EmployeeResource {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createEmployee(final CreateEmployeeDTO dto) {
-        Employee created = DatabaseAccess.instance().createEmploye(dto);
+        Employee created = DatabaseAccess.instance().createEmployee(dto);
         if (created == null) {
             return Response.status(500).build();
         }

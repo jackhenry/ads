@@ -13,16 +13,22 @@ public class Employee {
     public String firstname;
     @XmlElement
     public String lastname;
+    @XmlElement
+    public String employeeType;
+    @XmlElement
+    public int accountId;
 
     public Employee(String firstname, String lastname) {
         this.firstname = firstname;
         this.lastname = lastname;
     }
 
-    public Employee(int id, String firstname, String lastname) {
+    public Employee(int id, String firstname, String lastname, String employeeType, int accountId) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
+        this.employeeType = employeeType;
+        this.accountId = accountId;
     }
 
     public int getId() {
@@ -49,8 +55,25 @@ public class Employee {
         this.lastname = lastname;
     }
 
+    public String getEmployeeType() {
+        return employeeType;
+    }
+
+    public void setEmployeeType(String employeeType) {
+        this.employeeType = employeeType;
+    }
+
+    public int getAccountId() {
+        return this.accountId;
+    }
+
+    public void setAccountId(int accountId) {
+        this.accountId = accountId;
+    }
+
     public static Employee resultToEmployee(ResultSet result) throws SQLException {
         return new Employee(result.getInt("employee_id"), result.getString("firstname"),
-                result.getString("lastname"));
+                result.getString("lastname"), result.getString("employee_type"),
+                result.getInt("account_id"));
     }
 }

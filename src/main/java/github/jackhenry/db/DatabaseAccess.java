@@ -8,7 +8,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.NamingException;
-import github.jackhenry.Util;
 import github.jackhenry.dto.CreateEmployeeDTO;
 import github.jackhenry.dto.UpdateEmployeeDTO;
 import github.jackhenry.model.Employee;
@@ -35,8 +34,8 @@ public class DatabaseAccess {
          int limit = Integer.parseInt(end) - Integer.parseInt(start);
 
          Statement statement = DatabaseConnection.instance().createStatement();
-         String sql = "SELECT * FROM employee ORDER BY " + orderBy + " " + order + " LIMIT " + limit
-               + " OFFSET " + start;
+         String sql = "SELECT * FROM all_employees ORDER BY " + orderBy + " " + order + " LIMIT "
+               + limit + " OFFSET " + start;
          System.out.println(sql);
          ResultSet resultSet = statement.executeQuery(sql);
 
@@ -54,12 +53,9 @@ public class DatabaseAccess {
    public Employee getEmployeeById(String id) {
       try {
          Statement statement = DatabaseConnection.instance().createStatement();
-         String sql = "SELECT * FROM employee WHERE employee_id=" + id;
+         String sql = "SELECT * FROM all_employees WHERE employee_id=" + id;
          ResultSet resultSet = statement.executeQuery(sql);
          resultSet.next();
-         if (resultSet == null) {
-            return null;
-         }
          return Employee.resultToEmployee(resultSet);
       } catch (SQLException | NamingException ex) {
          return null;
@@ -83,29 +79,66 @@ public class DatabaseAccess {
       }
    }
 
-   public Employee createEmploye(CreateEmployeeDTO dto) {
+   public Employee createEmployee(CreateEmployeeDTO dto) {
       String firstname = dto.getFirstname();
       String lastname = dto.getLastname();
+      String password = dto.getPassword();
+      String employeeType = dto.getEmployeeType();
 
       if (firstname == null || lastname == null) {
          return null;
       }
 
       try {
-         String sql = "INSERT INTO Employee (firstname, lastname) VALUES (?, ?)";
-         PreparedStatement statement =
-               DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-         statement.setString(1, firstname);
-         statement.setString(2, lastname);
-         statement.executeUpdate();
-         ResultSet generatedKey = statement.getGeneratedKeys();
-         generatedKey.next();
-         int id = generatedKey.getInt(1);
-         return new Employee(id, firstname, lastname);
+         // Insert the new employee into employee table
+         int employeeId = insertEmployee(firstname, lastname);
+         // Create the new account
+         int accountId = insertAccount(password, employeeId);
+         // Create the Employee type record
+         insertEmployeeType(employeeType, employeeId, accountId);
+         return new Employee(employeeId, firstname, lastname, employeeType, accountId);
       } catch (SQLException | NamingException ex) {
          ex.printStackTrace();
          return null;
       }
+   }
+
+   public int insertEmployeeType(String employeeType, int employeeId, int accountId)
+         throws SQLException, NamingException {
+      String sql = "INSERT INTO " + employeeType + " (employee_id, account_id) VALUES (?, ?)";
+      PreparedStatement statement =
+            DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      statement.setInt(1, employeeId);
+      statement.setInt(2, accountId);
+      statement.executeUpdate();
+      return employeeId;
+   }
+
+   public int insertEmployee(String firstname, String lastname)
+         throws SQLException, NamingException {
+      String sql = "INSERT INTO Employee (firstname, lastname) VALUES (?, ?)";
+      PreparedStatement statement =
+            DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      statement.setString(1, firstname);
+      statement.setString(2, lastname);
+      statement.executeUpdate();
+      ResultSet generatedKey = statement.getGeneratedKeys();
+      generatedKey.next();
+      int employeeId = generatedKey.getInt(1);
+      return employeeId;
+   }
+
+   public int insertAccount(String password, int employeeId) throws SQLException, NamingException {
+      String sql = "INSERT INTO Account (password, employee_id) VALUES (?, ?)";
+      PreparedStatement statement =
+            DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+      statement.setString(1, password);
+      statement.setInt(2, employeeId);
+      statement.executeUpdate();
+      ResultSet generatedKey = statement.getGeneratedKeys();
+      generatedKey.next();
+      int accountId = generatedKey.getInt(1);
+      return accountId;
    }
 
    /**
@@ -118,7 +151,7 @@ public class DatabaseAccess {
       try {
          Statement statement = DatabaseConnection.instance().createStatement();
          // Get the record being deleted
-         String select = "SELECT * FROM employee WHERE employee_id=" + id;
+         String select = "SELECT * FROM all_employees WHERE employee_id=" + id;
          ResultSet rs = statement.executeQuery(select);
          rs.next();
          Employee employee = Employee.resultToEmployee(rs);
@@ -133,23 +166,55 @@ public class DatabaseAccess {
 
    public Employee updateEmployee(UpdateEmployeeDTO dto) {
       try {
-         String id = dto.getId();
+         String employeeId = dto.getId();
+         String accountId = dto.getAccountId();
+         String employeeType = dto.getEmployeeType();
          String firstname = dto.getFirstname();
          String lastname = dto.getLastname();
-         String sql = "UPDATE employee SET firstname=?, lastname=? WHERE employee_id=?";
-         PreparedStatement statement =
-               DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-         statement.setString(1, firstname);
-         statement.setString(2, lastname);
-         statement.setInt(3, Integer.parseInt(id));
-         statement.executeUpdate();
-         ResultSet generatedKey = statement.getGeneratedKeys();
-         generatedKey.next();
-         int generatedId = generatedKey.getInt(1);
-         return new Employee(generatedId, firstname, lastname);
+         Connection instance = DatabaseConnection.instance();
+         Employee employee = getEmployeeById(employeeId);
+         // Update employee information
+         String employeeUpdatedSql =
+               "UPDATE employee SET firstname=?, lastname=? WHERE employee_id=?";
+         PreparedStatement updateStatement = instance.prepareStatement(employeeUpdatedSql);
+         updateStatement.setString(1, firstname);
+         updateStatement.setString(2, lastname);
+         updateStatement.setInt(3, employee.getId());
+         updateStatement.executeUpdate();
+
+         /**
+          * If the employee type changes, the record in the old type needs to be deleted and a new
+          * record needs to be created in the new type.
+          */
+         if (!employee.getEmployeeType().equals(employeeType)) {
+            String deleteSql = "DELETE FROM " + employee.getEmployeeType() + " WHERE employee_id="
+                  + employee.getId();
+            Statement deleteStatement = instance.createStatement();
+            deleteStatement.executeUpdate(deleteSql);
+
+            String createSql =
+                  "INSERT INTO " + employeeType + " (employee_id, account_id) VALUES (?, ?)";
+            PreparedStatement createStatement = instance.prepareStatement(createSql);
+            createStatement.setInt(1, Integer.parseInt(employeeId));
+            createStatement.setInt(2, Integer.parseInt(accountId));
+            createStatement.executeUpdate();
+         }
+
+         return getEmployeeById(employeeId);
+
       } catch (SQLException | NamingException ex) {
          ex.printStackTrace();
          return null;
+      }
+   }
+
+   public void getAllEmployees() {
+      try {
+         Connection instance = DatabaseConnection.instance();
+
+
+      } catch (SQLException | NamingException ex) {
+         ex.printStackTrace();
       }
    }
 }
