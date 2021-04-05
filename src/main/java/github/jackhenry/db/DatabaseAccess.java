@@ -208,13 +208,4 @@ public class DatabaseAccess {
       }
    }
 
-   public void getAllEmployees() {
-      try {
-         Connection instance = DatabaseConnection.instance();
-
-
-      } catch (SQLException | NamingException ex) {
-         ex.printStackTrace();
-      }
-   }
 }
