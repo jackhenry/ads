@@ -128,4 +128,18 @@ public class StockAccess {
             return null;
         }
     }
+
+    public Stock deleteStockItem(final String id) {
+        try {
+            Statement statement = DatabaseConnection.instance().createStatement();
+            // Get the record being deleted
+            Stock stockItem = getStockItemById(id);
+            String sql = "DELETE FROM stock WHERE drug_id=" + id;
+            statement.executeUpdate(sql);
+            return stockItem;
+        } catch (SQLException | NamingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
 }

@@ -2,6 +2,7 @@ package github.jackhenry;
 
 import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -68,5 +69,18 @@ public class StockResource {
         }
 
         return Response.status(200).entity(updatedStockItem).build();
+    }
+
+    @DELETE
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{id}")
+    public Response deleteStockItem(@PathParam("id") final String id) {
+        Stock deletedStockItem = StockAccess.instance().deleteStockItem(id);
+
+        if (deletedStockItem == null) {
+            return Response.status(500).build();
+        }
+
+        return Response.status(200).entity(deletedStockItem).build();
     }
 }
