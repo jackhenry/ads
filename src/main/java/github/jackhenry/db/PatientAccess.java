@@ -1,5 +1,6 @@
 package github.jackhenry.db;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,8 +9,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.NamingException;
-import github.jackhenry.Util;
 import github.jackhenry.dto.CreatePatientDTO;
+import github.jackhenry.dto.UpdatePatientDTO;
 import github.jackhenry.model.Patient;
 
 public class PatientAccess {
@@ -108,6 +109,31 @@ public class PatientAccess {
             Statement updateStatement = DatabaseConnection.instance().createStatement();
             updateStatement.executeUpdate(sql);
             return getPatientById(id);
+        } catch (SQLException | NamingException ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public Patient updatePatient(UpdatePatientDTO dto) {
+        int patientId = dto.getId();
+        String firstname = dto.getFirstname();
+        String lastname = dto.getLastname();
+        String phoneNumber = dto.getPhoneNumber();
+
+        try {
+            Connection connection = DatabaseConnection.instance();
+            String updateSql =
+                    "UPDATE patient SET firstname=?, lastname=?, phone_number=? WHERE patient_id=?";
+            PreparedStatement updateStatement =
+                    connection.prepareStatement(updateSql, Statement.RETURN_GENERATED_KEYS);
+            updateStatement.setString(1, firstname);
+            updateStatement.setString(2, lastname);
+            updateStatement.setString(3, phoneNumber);
+            updateStatement.setInt(4, patientId);
+            updateStatement.executeUpdate();
+
+            return getPatientById(patientId + "");
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;

@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import github.jackhenry.db.PatientAccess;
 import github.jackhenry.dto.CreatePatientDTO;
+import github.jackhenry.dto.UpdatePatientDTO;
 import github.jackhenry.model.Patient;
 
 @Path("patient")
@@ -56,6 +57,17 @@ public class PatientResource {
         }
 
         return Response.status(200).entity(created).build();
+    }
+
+    @PUT
+    @Path("/{id}")
+    public Response updatePatient(@PathParam("id") final String id, final UpdatePatientDTO dto) {
+        Patient updatedPatient = PatientAccess.instance().updatePatient(dto);
+        if (updatedPatient == null) {
+            return Response.status(500).build();
+        }
+
+        return Response.status(200).entity(updatedPatient).build();
     }
 
     @PUT
