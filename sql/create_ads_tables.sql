@@ -59,9 +59,10 @@ CREATE TABLE medication_order (
     order_id         SERIAL PRIMARY KEY,
     creation_date    TIMESTAMP NOT NULL DEFAULT NOW(),
     expiration_date  TIMESTAMP NOT NULL,
+    quantity         INTEGER NOT NULL,
     patient_id       SERIAL REFERENCES Patient(patient_id),
     drug_id          SERIAL REFERENCES Drug(drug_id),
-    doctorID        SERIAL REFERENCES Doctor(employee_id)
+    doctor_id        SERIAL REFERENCES Doctor(employee_id)
 );
 
 CREATE TABLE Stock (

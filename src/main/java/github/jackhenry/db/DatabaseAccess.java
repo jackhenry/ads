@@ -96,7 +96,7 @@ public class DatabaseAccess {
          int accountId = insertAccount(password, employeeId);
          // Create the Employee type record
          insertEmployeeType(employeeType, employeeId, accountId);
-         return new Employee(employeeId, firstname, lastname, employeeType, accountId);
+         return getEmployeeById(employeeId + "");
       } catch (SQLException | NamingException ex) {
          ex.printStackTrace();
          return null;

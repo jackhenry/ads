@@ -12,6 +12,8 @@ public class CreatePatientDTO {
     @XmlElement
     private String lastname;
     @XmlElement
+    private String fullname;
+    @XmlElement
     private String phoneNumber;
 
     public int getId() {
@@ -36,6 +38,14 @@ public class CreatePatientDTO {
 
     public void setLastname(String lastname) {
         this.lastname = lastname;
+    }
+
+    public String getFullname() {
+        return this.fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
     }
 
     public String getPhoneNumber() {

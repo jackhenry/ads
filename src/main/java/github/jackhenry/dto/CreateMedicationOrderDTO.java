@@ -1,12 +1,22 @@
 package github.jackhenry.dto;
 
 import java.sql.Timestamp;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
+@XmlRootElement
 public class CreateMedicationOrderDTO {
+    @XmlElement
     private Timestamp creationDate;
+    @XmlElement
     private Timestamp expirationDate;
+    @XmlElement
+    private int quantity;
+    @XmlElement
     private int patientId;
+    @XmlElement
     private int drugId;
+    @XmlElement
     private int doctorId;
 
     public Timestamp getCreationDate() {
@@ -47,6 +57,14 @@ public class CreateMedicationOrderDTO {
 
     public void setDoctorId(int doctorId) {
         this.doctorId = doctorId;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 
 }

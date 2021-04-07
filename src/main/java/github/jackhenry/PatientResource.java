@@ -27,7 +27,7 @@ public class PatientResource {
         String start = Util.getValueOrDefault(startStr, "0");
         String end = Util.getValueOrDefault(endStr, "10");
         String order = Util.getValueOrDefault(orderStr, "ASC");
-        String sortKey = Util.getValueOrDefault(sortKeyStr, "employee_id");
+        String sortKey = Util.getValueOrDefault(sortKeyStr, "patient_id");
 
         List<Patient> patients = access.getPatientList(start, end, order, sortKey);
 

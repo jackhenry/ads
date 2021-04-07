@@ -13,13 +13,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import github.jackhenry.db.MedOrderAccess;
-import github.jackhenry.db.StockAccess;
-import github.jackhenry.dto.AddStockDTO;
 import github.jackhenry.dto.CreateMedicationOrderDTO;
 import github.jackhenry.dto.UpdateMedicationOrderDTO;
-import github.jackhenry.dto.UpdateStockDTO;
 import github.jackhenry.model.MedicationOrder;
-import github.jackhenry.model.Stock;
 
 @Path("mo")
 public class MedOrderResource {
@@ -34,7 +30,7 @@ public class MedOrderResource {
         String order = Util.getValueOrDefault(orderStr, "ASC");
         String sortKey = Util.getValueOrDefault(sortKeyStr, "order_id");
 
-        List<Stock> medOrderList = access.getGetMedOrders(start, end, order, sortKey);
+        List<MedicationOrder> medOrderList = access.getMedOrders(start, end, order, sortKey);
 
         return Response.status(200).entity(medOrderList)
                 .header("Access-Control-Expose-Headers", "X-Total-Count")
@@ -83,9 +79,10 @@ public class MedOrderResource {
         MedicationOrder deletedMedOrder = MedOrderAccess.instance().deleteMedOrder(id);
 
         if (deletedMedOrder == null) {
+            System.out.println("Null");
             return Response.status(500).build();
         }
-
+        System.out.println("Returning");
         return Response.status(200).entity(deletedMedOrder).build();
     }
 }

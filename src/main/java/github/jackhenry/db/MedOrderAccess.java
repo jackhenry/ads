@@ -1,5 +1,6 @@
 package github.jackhenry.db;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -8,7 +9,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.NamingException;
+import javax.xml.crypto.Data;
 import github.jackhenry.dto.CreateMedicationOrderDTO;
+import github.jackhenry.dto.UpdateMedicationOrderDTO;
 import github.jackhenry.model.MedicationOrder;
 
 public class MedOrderAccess {
@@ -19,7 +22,7 @@ public class MedOrderAccess {
     }
 
     public static MedOrderAccess instance() {
-        if (instance != null) {
+        if (instance == null) {
             instance = new MedOrderAccess();
         }
 
@@ -57,24 +60,31 @@ public class MedOrderAccess {
 
             ArrayList<MedicationOrder> medOrderList = new ArrayList<MedicationOrder>();
             while (resultSet.next()) {
-                medOrderList.add(MedicationOrder.resultToMedOrder(resultSet));
+                MedicationOrder medOrder = MedicationOrder.resultToMedOrder(resultSet);
+                medOrderList.add(medOrder);
             }
 
             return medOrderList;
         } catch (SQLException | NamingException ex) {
+            ex.printStackTrace();
             return new ArrayList<MedicationOrder>();
         }
     }
 
     public MedicationOrder getMedOrderById(String id) {
+        Connection connection = null;
+        Statement statement = null;
         try {
-            Statement statement = DatabaseConnection.instance().createStatement();
+            connection = DatabaseConnection.instance();
+            statement = connection.createStatement();
             String sql = "SELECT * FROM medication_order WHERE order_id=" + id;
             ResultSet resultSet = statement.executeQuery(sql);
             resultSet.next();
             return MedicationOrder.resultToMedOrder(resultSet);
         } catch (SQLException | NamingException ex) {
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement);
         }
     }
 
@@ -82,23 +92,23 @@ public class MedOrderAccess {
         int doctorId = dto.getDoctorId();
         int patientId = dto.getPatientId();
         int drugId = dto.getDrugId();
+        int quantity = dto.getQuantity();
         Timestamp expirationDate = dto.getExpirationDate();
         Timestamp creationDate = dto.getCreationDate();
-        try {
-            // Return error if stock for drug id already exists
-            MedicationOrder existingMedOrder = getMedOrderById(orderId + "");
-            if (existingMedOrder != null) {
-                return null;
-            }
 
+        Connection connection = null;
+        PreparedStatement insertStatement = null;
+        try {
             String sql =
-                    "INSERT INTO medication_order (patient_id, doctor_id, creation_date, expiration_date) VALUES (?, ?, ?, ?)";
-            PreparedStatement insertStatement = DatabaseConnection.instance().prepareStatement(sql,
-                    Statement.RETURN_GENERATED_KEYS);
+                    "INSERT INTO medication_order (patient_id, doctor_id, drug_id, creation_date, expiration_date, quantity) VALUES (?, ?, ?, ?, ?, ?)";
+            connection = DatabaseConnection.instance();
+            insertStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             insertStatement.setInt(1, patientId);
             insertStatement.setInt(2, doctorId);
-            insertStatement.setTimestamp(3, creationDate);
-            insertStatement.setTimestamp(4, expirationDate);
+            insertStatement.setInt(3, drugId);
+            insertStatement.setTimestamp(4, creationDate);
+            insertStatement.setTimestamp(5, expirationDate);
+            insertStatement.setInt(6, quantity);
             insertStatement.executeUpdate();
             ResultSet keys = insertStatement.getGeneratedKeys();
             keys.next();
@@ -108,45 +118,63 @@ public class MedOrderAccess {
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, insertStatement);
         }
     }
 
-    public Stock updateStockItem(UpdateStockDTO dto) {
+    public MedicationOrder updateMedOrder(UpdateMedicationOrderDTO dto) {
+        int orderId = dto.getOrderId();
+        int doctorId = dto.getDoctorId();
+        int patientId = dto.getPatientId();
         int drugId = dto.getDrugId();
         int quantity = dto.getQuantity();
-        int threshold = dto.getThreshold();
         Timestamp expirationDate = dto.getExpirationDate();
+        Timestamp creationDate = dto.getCreationDate();
 
+        Connection connection = null;
+        PreparedStatement updateStatement = null;
         try {
-            Connection connection = DatabaseConnection.instance();
+            connection = DatabaseConnection.instance();
             String updateSql =
-                    "UPDATE stock SET quantity=?, threshold=?, drug_expiration=? WHERE drug_id=?";
-            PreparedStatement updateStatement =
+                    "UPDATE medication_order SET drug_id=?, doctor_id=?, patient_id=?, quantity=?, expiration_date=?, creation_date=? WHERE drug_id=?";
+            updateStatement =
                     connection.prepareStatement(updateSql, Statement.RETURN_GENERATED_KEYS);
-            updateStatement.setInt(1, quantity);
-            updateStatement.setInt(2, threshold);
-            updateStatement.setTimestamp(3, expirationDate);
-            updateStatement.setInt(4, drugId);
+            updateStatement.setInt(1, drugId);
+            updateStatement.setInt(2, doctorId);
+            updateStatement.setInt(3, patientId);
+            updateStatement.setInt(4, quantity);
+            updateStatement.setTimestamp(5, expirationDate);
+            updateStatement.setTimestamp(6, creationDate);
+            updateStatement.setInt(7, orderId);
             updateStatement.executeUpdate();
 
-            return getStockItemById(drugId + "");
+            return getMedOrderById(orderId + "");
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, updateStatement);
         }
     }
 
-    public Stock deleteStockItem(final String id) {
+    public MedicationOrder deleteMedOrder(final String id) {
+        Connection connection = null;
+        Statement statement = null;
         try {
-            Statement statement = DatabaseConnection.instance().createStatement();
+            connection = DatabaseConnection.instance();
+            statement = connection.createStatement();
             // Get the record being deleted
-            Stock stockItem = getStockItemById(id);
-            String sql = "DELETE FROM stock WHERE drug_id=" + id;
+            MedicationOrder medOrder = getMedOrderById(id);
+            System.out.println("Med order: " + medOrder.getDrugId());
+            String sql = "DELETE FROM medication_order WHERE order_id=" + id;
             statement.executeUpdate(sql);
-            return stockItem;
+            return medOrder;
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement);
         }
     }
 }

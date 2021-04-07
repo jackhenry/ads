@@ -1,6 +1,7 @@
 package github.jackhenry.model;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -8,21 +9,24 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class MedicationOrder {
     @XmlElement
-    private int id;
+    public int id;
     @XmlElement
-    private Timestamp creationDate;
+    public int quantity;
     @XmlElement
-    private Timestamp expirationDate;
+    public Timestamp creationDate;
     @XmlElement
-    private int patientId;
+    public Timestamp expirationDate;
     @XmlElement
-    private int drugId;
+    public int patientId;
     @XmlElement
-    private int doctorId;
+    public int drugId;
+    @XmlElement
+    public int doctorId;
 
-    public MedicationOrder(int id, Timestamp creationDate, Timestamp expirationDate, int patientId,
-            int drugId, int doctorId) {
+    public MedicationOrder(int id, int quantity, Timestamp creationDate, Timestamp expirationDate,
+            int patientId, int drugId, int doctorId) {
         this.id = id;
+        this.quantity = quantity;
         this.creationDate = creationDate;
         this.expirationDate = expirationDate;
         this.patientId = patientId;
@@ -78,9 +82,18 @@ public class MedicationOrder {
         this.doctorId = doctorId;
     }
 
-    public static MedicationOrder resultToMedOrder(ResultSet resultSet) {
-        // return null;
+    public int getQuantity() {
+        return this.quantity;
     }
 
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public static MedicationOrder resultToMedOrder(ResultSet rs) throws SQLException {
+        return new MedicationOrder(rs.getInt("order_id"), rs.getInt("quantity"),
+                rs.getTimestamp("creation_date"), rs.getTimestamp("expiration_date"),
+                rs.getInt("patient_id"), rs.getInt("drug_id"), rs.getInt("doctor_id"));
+    }
 
 }

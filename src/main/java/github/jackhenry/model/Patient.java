@@ -15,17 +15,20 @@ public class Patient {
     @XmlElement
     public String lastname;
     @XmlElement
+    public String fullname;
+    @XmlElement
     public String phoneNumber;
     @XmlElement
     public Timestamp admitDate;
     @XmlElement
     public Timestamp dischargeDate;
 
-    public Patient(int id, String firstname, String lastname, String phoneNumber,
+    public Patient(int id, String firstname, String lastname, String fullname, String phoneNumber,
             Timestamp admitDate, Timestamp dischargeDate) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
+        this.fullname = fullname;
         this.phoneNumber = phoneNumber;
         this.admitDate = admitDate;
         this.dischargeDate = dischargeDate;
@@ -55,6 +58,14 @@ public class Patient {
         this.lastname = lastname;
     }
 
+    public String getFullname() {
+        return this.fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
     public String getPhoneNumber() {
         return this.phoneNumber;
     }
@@ -80,9 +91,12 @@ public class Patient {
     }
 
     public static Patient resultToEmployee(ResultSet rs) throws SQLException {
-        return new Patient(rs.getInt("patient_id"), rs.getString("firstname"),
-                rs.getString("lastname"), rs.getString("phone_number"),
-                rs.getTimestamp("admit_date"), rs.getTimestamp("discharge_date"));
+        String firstname = rs.getString("firstname");
+        String lastname = rs.getString("lastname");
+        String fullname = firstname + " " + lastname;
+        return new Patient(rs.getInt("patient_id"), firstname, lastname, fullname,
+                rs.getString("phone_number"), rs.getTimestamp("admit_date"),
+                rs.getTimestamp("discharge_date"));
     }
 
 
