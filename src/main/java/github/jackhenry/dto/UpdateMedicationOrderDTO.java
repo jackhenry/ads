@@ -1,14 +1,14 @@
 package github.jackhenry.dto;
 
 public class UpdateMedicationOrderDTO extends CreateMedicationOrderDTO {
-    private int orderId;
+    private int id;
 
     public int getOrderId() {
-        return this.orderId;
+        return this.id;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setOrderId(int id) {
+        this.id = id;
     }
 
 }

@@ -1,37 +1,35 @@
 package github.jackhenry.db;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import javax.naming.NamingException;
-import github.jackhenry.dto.AddStockDTO;
-import github.jackhenry.dto.UpdateStockDTO;
-import github.jackhenry.model.Stock;
+import github.jackhenry.dto.CreateMedicationOrderDTO;
+import github.jackhenry.model.MedicationOrder;
 
-public class StockAccess {
-    private static StockAccess instance = null;
+public class MedOrderAccess {
+    private static MedOrderAccess instance = null;
 
-    private StockAccess() {
+    private MedOrderAccess() {
 
     }
 
-    public static StockAccess instance() {
-        if (instance == null) {
-            instance = new StockAccess();
+    public static MedOrderAccess instance() {
+        if (instance != null) {
+            instance = new MedOrderAccess();
         }
 
         return instance;
     }
 
-    public int getNumberOfStockItems() {
+    public int getNumberOfMedOrders() {
         try {
             Statement statement = DatabaseConnection.instance().createStatement();
-            String sql = "SELECT COUNT(*) FROM stock";
+            String sql = "SELECT COUNT(*) FROM medication_order";
             ResultSet resultSet = statement.executeQuery(sql);
             int size = 0;
             if (resultSet != null) {
@@ -45,63 +43,68 @@ public class StockAccess {
         }
     }
 
-    public List<Stock> getStockItemList(String start, String end, String order, String sortKey) {
-        String orderBy = sortKey.equals("id") ? "drug_id" : sortKey;
+    public List<MedicationOrder> getMedOrders(String start, String end, String order,
+            String sortKey) {
+        String orderBy = sortKey.equals("id") ? "order_id" : sortKey;
         try {
             int limit = Integer.parseInt(end) - Integer.parseInt(start);
 
             Statement statement = DatabaseConnection.instance().createStatement();
-            String sql = "SELECT * FROM stock ORDER BY " + orderBy + " " + order + " LIMIT " + limit
-                    + " OFFSET " + start;
+            String sql = "SELECT * FROM medication_order ORDER BY " + orderBy + " " + order
+                    + " LIMIT " + limit + " OFFSET " + start;
             System.out.println(sql);
             ResultSet resultSet = statement.executeQuery(sql);
 
-            ArrayList<Stock> stockList = new ArrayList<Stock>();
+            ArrayList<MedicationOrder> medOrderList = new ArrayList<MedicationOrder>();
             while (resultSet.next()) {
-                stockList.add(Stock.resultToStockItem(resultSet));
+                medOrderList.add(MedicationOrder.resultToMedOrder(resultSet));
             }
 
-            return stockList;
+            return medOrderList;
         } catch (SQLException | NamingException ex) {
-            return new ArrayList<Stock>();
+            return new ArrayList<MedicationOrder>();
         }
     }
 
-    public Stock getStockItemById(String id) {
+    public MedicationOrder getMedOrderById(String id) {
         try {
             Statement statement = DatabaseConnection.instance().createStatement();
-            String sql = "SELECT * FROM stock WHERE drug_id=" + id;
+            String sql = "SELECT * FROM medication_order WHERE order_id=" + id;
             ResultSet resultSet = statement.executeQuery(sql);
             resultSet.next();
-            return Stock.resultToStockItem(resultSet);
+            return MedicationOrder.resultToMedOrder(resultSet);
         } catch (SQLException | NamingException ex) {
             return null;
         }
     }
 
-    public Stock createStockItem(AddStockDTO dto) {
+    public MedicationOrder createMedOrder(CreateMedicationOrderDTO dto) {
+        int doctorId = dto.getDoctorId();
+        int patientId = dto.getPatientId();
         int drugId = dto.getDrugId();
-        int quantity = dto.getQuantity();
-        int threshold = dto.getThreshold();
         Timestamp expirationDate = dto.getExpirationDate();
+        Timestamp creationDate = dto.getCreationDate();
         try {
             // Return error if stock for drug id already exists
-            Stock existingStock = getStockItemById(drugId + "");
-            if (existingStock != null) {
+            MedicationOrder existingMedOrder = getMedOrderById(orderId + "");
+            if (existingMedOrder != null) {
                 return null;
             }
 
             String sql =
-                    "INSERT INTO stock (drug_id, quantity, threshold, drug_expiration) VALUES (?, ?, ?, ?)";
+                    "INSERT INTO medication_order (patient_id, doctor_id, creation_date, expiration_date) VALUES (?, ?, ?, ?)";
             PreparedStatement insertStatement = DatabaseConnection.instance().prepareStatement(sql,
                     Statement.RETURN_GENERATED_KEYS);
-            insertStatement.setInt(1, drugId);
-            insertStatement.setInt(2, quantity);
-            insertStatement.setInt(3, threshold);
+            insertStatement.setInt(1, patientId);
+            insertStatement.setInt(2, doctorId);
+            insertStatement.setTimestamp(3, creationDate);
             insertStatement.setTimestamp(4, expirationDate);
             insertStatement.executeUpdate();
-            System.out.println("Created drug id: " + drugId);
-            return getStockItemById(drugId + "");
+            ResultSet keys = insertStatement.getGeneratedKeys();
+            keys.next();
+            int orderId = keys.getInt(1);
+            System.out.println("Created order id: " + orderId);
+            return getMedOrderById(orderId + "");
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;

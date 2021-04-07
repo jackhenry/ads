@@ -1,5 +1,6 @@
 package github.jackhenry.model;
 
+import java.sql.ResultSet;
 import java.sql.Timestamp;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -7,7 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement
 public class MedicationOrder {
     @XmlElement
-    private int orderId;
+    private int id;
     @XmlElement
     private Timestamp creationDate;
     @XmlElement
@@ -19,9 +20,9 @@ public class MedicationOrder {
     @XmlElement
     private int doctorId;
 
-    public MedicationOrder(int orderId, Timestamp creationDate, Timestamp expirationDate,
-            int patientId, int drugId, int doctorId) {
-        this.orderId = orderId;
+    public MedicationOrder(int id, Timestamp creationDate, Timestamp expirationDate, int patientId,
+            int drugId, int doctorId) {
+        this.id = id;
         this.creationDate = creationDate;
         this.expirationDate = expirationDate;
         this.patientId = patientId;
@@ -30,11 +31,11 @@ public class MedicationOrder {
     }
 
     public int getOrderId() {
-        return this.orderId;
+        return this.id;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setOrderId(int id) {
+        this.id = id;
     }
 
     public Timestamp getCreationDate() {
@@ -75,6 +76,10 @@ public class MedicationOrder {
 
     public void setDoctorId(int doctorId) {
         this.doctorId = doctorId;
+    }
+
+    public static MedicationOrder resultToMedOrder(ResultSet resultSet) {
+        // return null;
     }
 
 
