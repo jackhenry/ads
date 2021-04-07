@@ -26,7 +26,7 @@ public class DrugResource {
         String start = Util.getValueOrDefault(startStr, "0");
         String end = Util.getValueOrDefault(endStr, "10");
         String order = Util.getValueOrDefault(orderStr, "ASC");
-        String sortKey = Util.getValueOrDefault(sortKeyStr, "employee_id");
+        String sortKey = Util.getValueOrDefault(sortKeyStr, "drug_id");
 
         DrugAccess access = DrugAccess.instance();
         List<Drug> employees = access.getDrugList(start, end, order, sortKey);
