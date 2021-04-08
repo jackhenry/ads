@@ -30,14 +30,18 @@ public class DatabaseAccess {
    public List<Employee> getEmployees(String start, String end, String order, String sortKey) {
       // Convert id to employee_id to match schema
       String orderBy = sortKey.equals("id") ? "employee_id" : sortKey;
+      Connection connection = null;
+      Statement statement = null;
+      ResultSet resultSet = null;
       try {
          int limit = Integer.parseInt(end) - Integer.parseInt(start);
 
-         Statement statement = DatabaseConnection.instance().createStatement();
+         connection = DatabaseConnection.instance();
+         statement = connection.createStatement();
          String sql = "SELECT * FROM all_employees ORDER BY " + orderBy + " " + order + " LIMIT "
                + limit + " OFFSET " + start;
          System.out.println(sql);
-         ResultSet resultSet = statement.executeQuery(sql);
+         resultSet = statement.executeQuery(sql);
 
          ArrayList<Employee> employeesList = new ArrayList<>();
          while (resultSet.next()) {
@@ -47,26 +51,38 @@ public class DatabaseAccess {
          return employeesList;
       } catch (SQLException | NamingException ex) {
          return new ArrayList<Employee>();
+      } finally {
+         DatabaseConnection.safelyClose(connection, statement, resultSet);
       }
    }
 
    public Employee getEmployeeById(String id) {
+      Connection connection = null;
+      Statement statement = null;
+      ResultSet resultSet = null;
       try {
-         Statement statement = DatabaseConnection.instance().createStatement();
+         connection = DatabaseConnection.instance();
+         statement = connection.createStatement();
          String sql = "SELECT * FROM all_employees WHERE employee_id=" + id;
-         ResultSet resultSet = statement.executeQuery(sql);
+         resultSet = statement.executeQuery(sql);
          resultSet.next();
          return Employee.resultToEmployee(resultSet);
       } catch (SQLException | NamingException ex) {
          return null;
+      } finally {
+         DatabaseConnection.safelyClose(connection, statement, resultSet);
       }
    }
 
    public int getTotalNumberOfEmployees() {
+      Connection connection = null;
+      Statement statement = null;
+      ResultSet resultSet = null;
       try {
-         Statement statement = DatabaseConnection.instance().createStatement();
+         connection = DatabaseConnection.instance();
+         statement = connection.createStatement();
          String sql = "SELECT COUNT(*) FROM employee";
-         ResultSet resultSet = statement.executeQuery(sql);
+         resultSet = statement.executeQuery(sql);
          int size = 0;
          if (resultSet != null) {
             resultSet.next();
@@ -76,6 +92,8 @@ public class DatabaseAccess {
       } catch (SQLException | NamingException ex) {
          ex.printStackTrace();
          return 0;
+      } finally {
+         DatabaseConnection.safelyClose(connection, statement, resultSet);
       }
    }
 
@@ -106,38 +124,44 @@ public class DatabaseAccess {
    public int insertEmployeeType(String employeeType, int employeeId, int accountId)
          throws SQLException, NamingException {
       String sql = "INSERT INTO " + employeeType + " (employee_id, account_id) VALUES (?, ?)";
+      Connection connection = DatabaseConnection.instance();
       PreparedStatement statement =
-            DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       statement.setInt(1, employeeId);
       statement.setInt(2, accountId);
       statement.executeUpdate();
+      DatabaseConnection.safelyClose(connection, statement);
       return employeeId;
    }
 
    public int insertEmployee(String firstname, String lastname)
          throws SQLException, NamingException {
       String sql = "INSERT INTO Employee (firstname, lastname) VALUES (?, ?)";
+      Connection connection = DatabaseConnection.instance();
       PreparedStatement statement =
-            DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       statement.setString(1, firstname);
       statement.setString(2, lastname);
       statement.executeUpdate();
       ResultSet generatedKey = statement.getGeneratedKeys();
       generatedKey.next();
       int employeeId = generatedKey.getInt(1);
+      DatabaseConnection.safelyClose(connection, statement, generatedKey);
       return employeeId;
    }
 
    public int insertAccount(String password, int employeeId) throws SQLException, NamingException {
       String sql = "INSERT INTO Account (password, employee_id) VALUES (?, ?)";
+      Connection connection = DatabaseConnection.instance();
       PreparedStatement statement =
-            DatabaseConnection.instance().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
       statement.setString(1, password);
       statement.setInt(2, employeeId);
       statement.executeUpdate();
       ResultSet generatedKey = statement.getGeneratedKeys();
       generatedKey.next();
       int accountId = generatedKey.getInt(1);
+      DatabaseConnection.safelyClose(connection, statement, generatedKey);
       return accountId;
    }
 
@@ -148,11 +172,15 @@ public class DatabaseAccess {
     * @return number of records successfully deleted
     */
    public Employee deleteEmployee(String id) {
+      Connection connection = null;
+      Statement statement = null;
+      ResultSet rs = null;
       try {
-         Statement statement = DatabaseConnection.instance().createStatement();
+         connection = DatabaseConnection.instance();
+         statement = connection.createStatement();
          // Get the record being deleted
          String select = "SELECT * FROM all_employees WHERE employee_id=" + id;
-         ResultSet rs = statement.executeQuery(select);
+         rs = statement.executeQuery(select);
          rs.next();
          Employee employee = Employee.resultToEmployee(rs);
          String sql = "DELETE FROM employee WHERE employee_id=" + id;
@@ -161,22 +189,27 @@ public class DatabaseAccess {
       } catch (SQLException | NamingException ex) {
          ex.printStackTrace();
          return null;
+      } finally {
+         DatabaseConnection.safelyClose(connection, statement, rs);
       }
    }
 
    public Employee updateEmployee(UpdateEmployeeDTO dto) {
+      String employeeId = dto.getId();
+      String accountId = dto.getAccountId();
+      String employeeType = dto.getEmployeeType();
+      String firstname = dto.getFirstname();
+      String lastname = dto.getLastname();
+      Connection instance = null;
+      PreparedStatement updateStatement = null;
+      PreparedStatement createStatement = null;
       try {
-         String employeeId = dto.getId();
-         String accountId = dto.getAccountId();
-         String employeeType = dto.getEmployeeType();
-         String firstname = dto.getFirstname();
-         String lastname = dto.getLastname();
-         Connection instance = DatabaseConnection.instance();
+         instance = DatabaseConnection.instance();
          Employee employee = getEmployeeById(employeeId);
          // Update employee information
          String employeeUpdatedSql =
                "UPDATE employee SET firstname=?, lastname=? WHERE employee_id=?";
-         PreparedStatement updateStatement = instance.prepareStatement(employeeUpdatedSql);
+         updateStatement = instance.prepareStatement(employeeUpdatedSql);
          updateStatement.setString(1, firstname);
          updateStatement.setString(2, lastname);
          updateStatement.setInt(3, employee.getId());
@@ -194,7 +227,7 @@ public class DatabaseAccess {
 
             String createSql =
                   "INSERT INTO " + employeeType + " (employee_id, account_id) VALUES (?, ?)";
-            PreparedStatement createStatement = instance.prepareStatement(createSql);
+            createStatement = instance.prepareStatement(createSql);
             createStatement.setInt(1, Integer.parseInt(employeeId));
             createStatement.setInt(2, Integer.parseInt(accountId));
             createStatement.executeUpdate();
@@ -205,6 +238,9 @@ public class DatabaseAccess {
       } catch (SQLException | NamingException ex) {
          ex.printStackTrace();
          return null;
+      } finally {
+         DatabaseConnection.safelyClose(instance, updateStatement);
+         DatabaseConnection.safelyClose(null, createStatement);
       }
    }
 

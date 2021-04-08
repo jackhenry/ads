@@ -29,10 +29,14 @@ public class StockAccess {
     }
 
     public int getNumberOfStockItems() {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
         try {
-            Statement statement = DatabaseConnection.instance().createStatement();
+            connection = DatabaseConnection.instance();
+            statement = connection.createStatement();
             String sql = "SELECT COUNT(*) FROM stock";
-            ResultSet resultSet = statement.executeQuery(sql);
+            resultSet = statement.executeQuery(sql);
             int size = 0;
             if (resultSet != null) {
                 resultSet.next();
@@ -42,19 +46,26 @@ public class StockAccess {
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return 0;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement, resultSet);
         }
     }
 
     public List<Stock> getStockItemList(String start, String end, String order, String sortKey) {
         String orderBy = sortKey.equals("id") ? "drug_id" : sortKey;
+
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
         try {
             int limit = Integer.parseInt(end) - Integer.parseInt(start);
 
-            Statement statement = DatabaseConnection.instance().createStatement();
+            connection = DatabaseConnection.instance();
+            statement = connection.createStatement();
             String sql = "SELECT * FROM stock ORDER BY " + orderBy + " " + order + " LIMIT " + limit
                     + " OFFSET " + start;
             System.out.println(sql);
-            ResultSet resultSet = statement.executeQuery(sql);
+            resultSet = statement.executeQuery(sql);
 
             ArrayList<Stock> stockList = new ArrayList<Stock>();
             while (resultSet.next()) {
@@ -64,18 +75,26 @@ public class StockAccess {
             return stockList;
         } catch (SQLException | NamingException ex) {
             return new ArrayList<Stock>();
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement, resultSet);
         }
     }
 
     public Stock getStockItemById(String id) {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
         try {
-            Statement statement = DatabaseConnection.instance().createStatement();
+            connection = DatabaseConnection.instance();
+            statement = connection.createStatement();
             String sql = "SELECT * FROM stock WHERE drug_id=" + id;
-            ResultSet resultSet = statement.executeQuery(sql);
+            resultSet = statement.executeQuery(sql);
             resultSet.next();
             return Stock.resultToStockItem(resultSet);
         } catch (SQLException | NamingException ex) {
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement, resultSet);
         }
     }
 
@@ -84,6 +103,9 @@ public class StockAccess {
         int quantity = dto.getQuantity();
         int threshold = dto.getThreshold();
         Timestamp expirationDate = dto.getExpirationDate();
+
+        Connection connection = null;
+        PreparedStatement insertStatement = null;
         try {
             // Return error if stock for drug id already exists
             Stock existingStock = getStockItemById(drugId + "");
@@ -91,10 +113,10 @@ public class StockAccess {
                 return null;
             }
 
+            connection = DatabaseConnection.instance();
             String sql =
                     "INSERT INTO stock (drug_id, quantity, threshold, drug_expiration) VALUES (?, ?, ?, ?)";
-            PreparedStatement insertStatement = DatabaseConnection.instance().prepareStatement(sql,
-                    Statement.RETURN_GENERATED_KEYS);
+            insertStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             insertStatement.setInt(1, drugId);
             insertStatement.setInt(2, quantity);
             insertStatement.setInt(3, threshold);
@@ -105,6 +127,8 @@ public class StockAccess {
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, insertStatement);
         }
     }
 
@@ -114,11 +138,13 @@ public class StockAccess {
         int threshold = dto.getThreshold();
         Timestamp expirationDate = dto.getExpirationDate();
 
+        Connection connection = null;
+        PreparedStatement updateStatement = null;
         try {
-            Connection connection = DatabaseConnection.instance();
+            connection = DatabaseConnection.instance();
             String updateSql =
                     "UPDATE stock SET quantity=?, threshold=?, drug_expiration=? WHERE drug_id=?";
-            PreparedStatement updateStatement =
+            updateStatement =
                     connection.prepareStatement(updateSql, Statement.RETURN_GENERATED_KEYS);
             updateStatement.setInt(1, quantity);
             updateStatement.setInt(2, threshold);
@@ -130,12 +156,17 @@ public class StockAccess {
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, updateStatement);
         }
     }
 
     public Stock deleteStockItem(final String id) {
+        Connection connection = null;
+        Statement statement = null;
         try {
-            Statement statement = DatabaseConnection.instance().createStatement();
+            connection = DatabaseConnection.instance();
+            statement = connection.createStatement();
             // Get the record being deleted
             Stock stockItem = getStockItemById(id);
             String sql = "DELETE FROM stock WHERE drug_id=" + id;
@@ -144,6 +175,8 @@ public class StockAccess {
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement);
         }
     }
 }

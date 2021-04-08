@@ -10,11 +10,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import github.jackhenry.db.DatabaseAccess;
 import github.jackhenry.dto.CreateEmployeeDTO;
 import github.jackhenry.dto.UpdateEmployeeDTO;
+import github.jackhenry.exception.EntityNotFoundException;
 import github.jackhenry.model.Employee;
 
 /**
@@ -49,10 +51,10 @@ public class EmployeeResource {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getEmployeeById(@PathParam("id") String id) {
+    public Response getEmployeeById(@PathParam("id") String id) throws EntityNotFoundException {
         Employee employee = DatabaseAccess.instance().getEmployeeById(id);
         if (employee == null) {
-            return Response.status(404).build();
+            throw new EntityNotFoundException();
         }
         return Response.status(200).entity(employee).build();
     }
