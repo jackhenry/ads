@@ -70,7 +70,7 @@ CREATE TABLE medication_order (
 CREATE TABLE Stock (
     quantity        INTEGER NOT NULL,
     threshold       INTEGER NOT NULL,
-    drug_expiration  DATE NOT NULL,
+    drug_expiration  DATE NOT  NULL,
     drug_id          SERIAL PRIMARY KEY REFERENCES Drug
 );
 

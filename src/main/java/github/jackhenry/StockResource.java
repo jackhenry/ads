@@ -1,6 +1,7 @@
 package github.jackhenry;
 
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,6 +20,7 @@ import github.jackhenry.model.Stock;
 
 @Path("stock")
 public class StockResource {
+    @RolesAllowed({"doctor", "nurse", "pharmatech"})
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@QueryParam("_start") String startStr, @QueryParam("_end") String endStr,
@@ -37,6 +39,7 @@ public class StockResource {
                 .header("X-Total-Count", access.getNumberOfStockItems()).build();
     }
 
+    @RolesAllowed({"doctor", "nurse", "pharmatech"})
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -49,6 +52,7 @@ public class StockResource {
         return Response.status(200).entity(stock).build();
     }
 
+    @RolesAllowed("nurse")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createPatient(final AddStockDTO dto) {
@@ -60,6 +64,7 @@ public class StockResource {
         return Response.status(200).entity(created).build();
     }
 
+    @RolesAllowed("nurse")
     @PUT
     @Path("/{id}")
     public Response updatePatient(@PathParam("id") final String id, final UpdateStockDTO dto) {
@@ -71,6 +76,7 @@ public class StockResource {
         return Response.status(200).entity(updatedStockItem).build();
     }
 
+    @RolesAllowed("pharmatech")
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}")

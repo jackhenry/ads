@@ -1,6 +1,8 @@
 package github.jackhenry;
 
 import java.util.List;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -29,6 +31,7 @@ public class EmployeeResource {
      *
      * @return String that will be returned as a text/plain response.
      */
+    @RolesAllowed("doctor")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@QueryParam("_start") String startStr, @QueryParam("_end") String endStr,

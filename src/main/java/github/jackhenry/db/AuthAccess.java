@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Base64;
 import javax.naming.NamingException;
 import github.jackhenry.exception.model.FailedAuthException;
@@ -72,4 +71,45 @@ public class AuthAccess {
         }
     }
 
+    public void logout(String token) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DatabaseConnection.instance();
+            String sql = "DELETE FROM token WHERE token=?";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, token);
+            statement.executeUpdate();
+        } catch (SQLException | NamingException ex) {
+            ex.printStackTrace();
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement);
+        }
+    }
+
+    public String getTokenRole(String token) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = DatabaseConnection.instance();
+            String sql = "SELECT employee_type FROM" + "\n(SELECT employee_id FROM token as t"
+                    + "\nLEFT JOIN account a on a.account_id = t.account_id"
+                    + "\nWHERE t.token=?) as employeeinfo"
+                    + "\nLEFT JOIN all_employees ON employeeinfo.employee_id=all_employees.employee_id";
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, token);
+            resultSet = statement.executeQuery();
+            if (!resultSet.next()) {
+                return null;
+            }
+            return resultSet.getString("employee_type");
+
+        } catch (SQLException | NamingException ex) {
+            ex.printStackTrace();
+            return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement, resultSet);
+        }
+    }
 }
