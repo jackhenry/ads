@@ -10,13 +10,13 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import github.jackhenry.db.AuthAccess;
+import github.jackhenry.exception.model.ErrorModel;
 
 @Provider
 public class SecurityInterceptor implements ContainerRequestFilter {
@@ -43,7 +43,7 @@ public class SecurityInterceptor implements ContainerRequestFilter {
 
             if (authorization == null || authorization.isEmpty()) {
                 requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
-                        .entity("Access denied.").build());
+                        .entity(new ErrorModel("Access denied.")).build());
                 return;
             }
 

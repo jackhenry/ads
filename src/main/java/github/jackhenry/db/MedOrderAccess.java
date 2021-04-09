@@ -53,7 +53,13 @@ public class MedOrderAccess {
 
     public List<MedicationOrder> getMedOrders(String start, String end, String order,
             String sortKey) {
+
         String orderBy = sortKey.equals("id") ? "order_id" : sortKey;
+        orderBy = orderBy.equals("doctorId") ? "doctor_id" : orderBy;
+        orderBy = orderBy.equals("patientId") ? "patient_id" : orderBy;
+        orderBy = orderBy.equals("drugId") ? "drug_id" : orderBy;
+        orderBy = orderBy.equals("creationDate") ? "creation_date" : orderBy;
+        orderBy = orderBy.equals("expirationDate") ? "expiration_date" : orderBy;
 
         Connection connection = null;
         Statement statement = null;
