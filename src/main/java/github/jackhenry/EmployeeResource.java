@@ -10,7 +10,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import github.jackhenry.db.DatabaseAccess;
@@ -54,7 +53,7 @@ public class EmployeeResource {
     public Response getEmployeeById(@PathParam("id") String id) throws EntityNotFoundException {
         Employee employee = DatabaseAccess.instance().getEmployeeById(id);
         if (employee == null) {
-            throw new EntityNotFoundException();
+            throw new EntityNotFoundException("MESSAGE");
         }
         return Response.status(200).entity(employee).build();
     }

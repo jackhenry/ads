@@ -19,6 +19,8 @@ public class Employee {
     public String employeeType;
     @XmlElement
     public int accountId;
+    @XmlElement
+    public String username;
 
     public Employee(String firstname, String lastname) {
         this.firstname = firstname;
@@ -26,13 +28,14 @@ public class Employee {
     }
 
     public Employee(int id, String firstname, String lastname, String fullname, String employeeType,
-            int accountId) {
+            int accountId, String username) {
         this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
         this.fullname = fullname;
         this.employeeType = employeeType;
         this.accountId = accountId;
+        this.username = username;
     }
 
     public int getId() {
@@ -83,11 +86,19 @@ public class Employee {
         this.accountId = accountId;
     }
 
+    public String getUsername() {
+        return this.username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     public static Employee resultToEmployee(ResultSet rs) throws SQLException {
         String firstname = rs.getString("firstname");
         String lastname = rs.getString("lastname");
         String fullname = firstname + " " + lastname;
         return new Employee(rs.getInt("employee_id"), firstname, lastname, fullname,
-                rs.getString("employee_type"), rs.getInt("account_id"));
+                rs.getString("employee_type"), rs.getInt("account_id"), rs.getString("username"));
     }
 }

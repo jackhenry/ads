@@ -4,11 +4,12 @@ DROP TABLE IF EXISTS pharmatech CASCADE;
 DROP TABLE IF EXISTS nurse;
 DROP TABLE IF EXISTS medication_order;
 DROP TABLE IF EXISTS doctor;
-DROP TABLE IF EXISTS account;
+DROP TABLE IF EXISTS account CASCADE;
 DROP TABLE IF EXISTS employee;
 DROP TABLE IF EXISTS patient;
 DROP TABLE IF EXISTS stock;
 DROP TABLE IF EXISTS drug;
+DROP TABLE IF EXISTS token;
 
 CREATE TABLE Employee (
     employee_id      SERIAL PRIMARY KEY,
@@ -18,7 +19,8 @@ CREATE TABLE Employee (
 
 CREATE TABLE Account (
     account_id       SERIAL PRIMARY KEY,
-    password        TEXT NOT NULL,
+    username         TEXT NOT NULL,
+    password         TEXT NOT NULL,
     employee_id      SERIAL REFERENCES Employee(employee_id) ON DELETE CASCADE
 );
 
@@ -74,9 +76,9 @@ CREATE TABLE Stock (
 
 CREATE VIEW all_employees AS
 (
-SELECT employee.employee_id, employee_type, firstname, lastname, account_id
+SELECT employee.employee_id, employee_type, firstname, lastname, account_id, username
 FROM (
-         SELECT employeetypes.employee_id, employeetypes.account_id, employee_type
+         SELECT employeetypes.employee_id, employeetypes.account_id, employee_type, account.username
          FROM (
                   SELECT *, 'doctor' as employee_type
                   FROM doctor
@@ -90,3 +92,8 @@ FROM (
                   LEFT JOIN account ON employeetypes.account_id = account.account_id
      ) AS employee_and_account LEFT JOIN employee ON employee_and_account.employee_id = employee.employee_id
 );
+
+CREATE TABLE Token (
+    account_id       SERIAL PRIMARY KEY REFERENCES Account(account_id),
+    token            TEXT
+)

@@ -100,6 +100,7 @@ public class DatabaseAccess {
    public Employee createEmployee(CreateEmployeeDTO dto) {
       String firstname = dto.getFirstname();
       String lastname = dto.getLastname();
+      String username = dto.getUsername();
       String password = dto.getPassword();
       String employeeType = dto.getEmployeeType();
 
@@ -111,7 +112,7 @@ public class DatabaseAccess {
          // Insert the new employee into employee table
          int employeeId = insertEmployee(firstname, lastname);
          // Create the new account
-         int accountId = insertAccount(password, employeeId);
+         int accountId = insertAccount(username, password, employeeId);
          // Create the Employee type record
          insertEmployeeType(employeeType, employeeId, accountId);
          return getEmployeeById(employeeId + "");
@@ -150,13 +151,15 @@ public class DatabaseAccess {
       return employeeId;
    }
 
-   public int insertAccount(String password, int employeeId) throws SQLException, NamingException {
-      String sql = "INSERT INTO Account (password, employee_id) VALUES (?, ?)";
+   public int insertAccount(String username, String password, int employeeId)
+         throws SQLException, NamingException {
+      String sql = "INSERT INTO Account (username, password, employee_id) VALUES (?, ?, ?)";
       Connection connection = DatabaseConnection.instance();
       PreparedStatement statement =
             connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-      statement.setString(1, password);
-      statement.setInt(2, employeeId);
+      statement.setString(1, username);
+      statement.setString(2, password);
+      statement.setInt(3, employeeId);
       statement.executeUpdate();
       ResultSet generatedKey = statement.getGeneratedKeys();
       generatedKey.next();
