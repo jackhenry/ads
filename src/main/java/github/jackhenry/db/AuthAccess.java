@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Base64;
 import javax.naming.NamingException;
 import github.jackhenry.exception.model.FailedAuthException;
+import github.jackhenry.model.Account;
 import github.jackhenry.model.Token;
 
 public class AuthAccess {
@@ -105,6 +106,28 @@ public class AuthAccess {
             }
             return resultSet.getString("employee_type");
 
+        } catch (SQLException | NamingException ex) {
+            ex.printStackTrace();
+            return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement, resultSet);
+        }
+    }
+
+    public Account getAccount(int accountId) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
+        try {
+            connection = DatabaseConnection.instance();
+            String sql = "SELECT * FROM all_employees WHERE account_id=?";
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, accountId);
+            resultSet = statement.executeQuery();
+            if (!resultSet.next()) {
+                return null;
+            }
+            return Account.resultToAccount(resultSet);
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;
