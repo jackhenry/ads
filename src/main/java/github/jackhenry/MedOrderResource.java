@@ -1,6 +1,7 @@
 package github.jackhenry;
 
 import java.util.List;
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -26,7 +27,7 @@ public class MedOrderResource {
         MedOrderAccess access = MedOrderAccess.instance();
         // Convert query parame
         String start = Util.getValueOrDefault(startStr, "0");
-        String end = Util.getValueOrDefault(endStr, "10");
+        String end = Util.getValueOrDefault(endStr, "100");
         String order = Util.getValueOrDefault(orderStr, "ASC");
         String sortKey = Util.getValueOrDefault(sortKeyStr, "order_id");
 
@@ -49,6 +50,7 @@ public class MedOrderResource {
         return Response.status(200).entity(order).build();
     }
 
+    @RolesAllowed("doctor")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response createMedOrder(final CreateMedicationOrderDTO dto) {
@@ -60,6 +62,7 @@ public class MedOrderResource {
         return Response.status(200).entity(created).build();
     }
 
+    @RolesAllowed("doctor")
     @PUT
     @Path("/{id}")
     public Response updateMedOrder(@PathParam("id") final String id,
@@ -72,6 +75,7 @@ public class MedOrderResource {
         return Response.status(200).entity(updatedMedOrder).build();
     }
 
+    @RolesAllowed({"doctor", "nurse"})
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}")
@@ -84,5 +88,19 @@ public class MedOrderResource {
         }
         System.out.println("Returning");
         return Response.status(200).entity(deletedMedOrder).build();
+    }
+
+    @RolesAllowed({"doctor", "nurse"})
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Path("/{id}/disperse")
+    public Response disperseMedOrder(@PathParam("id") final String id) {
+        MedicationOrder dispersedOrder = MedOrderAccess.instance().disperseMedOrder(id);
+
+        if (dispersedOrder == null) {
+            return Response.status(500).build();
+        }
+
+        return Response.status(200).entity(dispersedOrder).build();
     }
 }

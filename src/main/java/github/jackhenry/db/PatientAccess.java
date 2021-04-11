@@ -52,6 +52,8 @@ public class PatientAccess {
 
     public List<Patient> getPatientList(String start, String end, String order, String sortKey) {
         String orderBy = sortKey.equals("id") ? "patient_id" : sortKey;
+        orderBy = sortKey.equals("admitDate") ? "admit_date" : orderBy;
+        orderBy = sortKey.equals("dischargeDate") ? "discharge_date" : orderBy;
 
         Connection connection = null;
         Statement statement = null;

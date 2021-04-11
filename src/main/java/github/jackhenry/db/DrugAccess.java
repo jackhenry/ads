@@ -28,6 +28,7 @@ public class DrugAccess {
 
     public List<Drug> getDrugList(String start, String end, String order, String sortKey) {
         String orderBy = sortKey.equals("id") ? "drug_id" : sortKey;
+        orderBy = sortKey.equals("drugName") ? "drug_name" : orderBy;
 
         Connection connection = null;
         Statement statement = null;

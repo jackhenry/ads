@@ -12,6 +12,7 @@ import javax.naming.NamingException;
 import github.jackhenry.dto.CreateMedicationOrderDTO;
 import github.jackhenry.dto.UpdateMedicationOrderDTO;
 import github.jackhenry.model.MedicationOrder;
+import github.jackhenry.model.Stock;
 
 public class MedOrderAccess {
     private static MedOrderAccess instance = null;
@@ -190,6 +191,32 @@ public class MedOrderAccess {
             String sql = "DELETE FROM medication_order WHERE order_id=" + id;
             statement.executeUpdate(sql);
             return medOrder;
+        } catch (SQLException | NamingException ex) {
+            ex.printStackTrace();
+            return null;
+        } finally {
+            DatabaseConnection.safelyClose(connection, statement);
+        }
+    }
+
+    public MedicationOrder disperseMedOrder(final String id) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            MedicationOrder medOrder = getMedOrderById(id);
+            int drugId = medOrder.getDrugId();
+            int orderQuantity = medOrder.getQuantity();
+            Stock stockItem = StockAccess.instance().getStockItemById(drugId + "");
+            int stockQuantity = stockItem.getQuantity();
+            int newQuantity = stockQuantity - orderQuantity;
+            String sql = "UPDATE stock SET quantity=? WHERE drug_id=?";
+            connection = DatabaseConnection.instance();
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, newQuantity);
+            statement.setInt(2, drugId);
+            statement.executeUpdate();
+            MedicationOrder deletedOrder = deleteMedOrder(id);
+            return deletedOrder;
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
             return null;

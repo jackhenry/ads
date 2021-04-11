@@ -24,7 +24,7 @@ public class DrugResource {
 
         // Convert query parame
         String start = Util.getValueOrDefault(startStr, "0");
-        String end = Util.getValueOrDefault(endStr, "10");
+        String end = Util.getValueOrDefault(endStr, "100");
         String order = Util.getValueOrDefault(orderStr, "ASC");
         String sortKey = Util.getValueOrDefault(sortKeyStr, "drug_id");
 

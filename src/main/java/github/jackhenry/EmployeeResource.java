@@ -31,7 +31,6 @@ public class EmployeeResource {
      *
      * @return String that will be returned as a text/plain response.
      */
-    @RolesAllowed("doctor")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response get(@QueryParam("_start") String startStr, @QueryParam("_end") String endStr,
@@ -39,7 +38,7 @@ public class EmployeeResource {
 
         // Convert query parame
         String start = Util.getValueOrDefault(startStr, "0");
-        String end = Util.getValueOrDefault(endStr, "10");
+        String end = Util.getValueOrDefault(endStr, "100");
         String order = Util.getValueOrDefault(orderStr, "ASC");
         String sortKey = Util.getValueOrDefault(sortKeyStr, "employee_id");
 
@@ -72,6 +71,7 @@ public class EmployeeResource {
         return Response.status(200).entity(created).build();
     }
 
+    @RolesAllowed("pharmatech")
     @PUT
     @Path("/{id}")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -84,6 +84,7 @@ public class EmployeeResource {
         return Response.status(200).entity(updated).build();
     }
 
+    @RolesAllowed("pharmatech")
     @DELETE
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("/{id}")

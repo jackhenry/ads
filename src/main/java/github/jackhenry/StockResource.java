@@ -28,7 +28,7 @@ public class StockResource {
         StockAccess access = StockAccess.instance();
         // Convert query parame
         String start = Util.getValueOrDefault(startStr, "0");
-        String end = Util.getValueOrDefault(endStr, "10");
+        String end = Util.getValueOrDefault(endStr, "100");
         String order = Util.getValueOrDefault(orderStr, "ASC");
         String sortKey = Util.getValueOrDefault(sortKeyStr, "drug_id");
 
@@ -52,10 +52,10 @@ public class StockResource {
         return Response.status(200).entity(stock).build();
     }
 
-    @RolesAllowed("nurse")
+    @RolesAllowed("pharmatech")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response createPatient(final AddStockDTO dto) {
+    public Response createStockItem(final AddStockDTO dto) {
         Stock created = StockAccess.instance().createStockItem(dto);
         if (created == null) {
             return Response.status(500).build();
@@ -64,10 +64,10 @@ public class StockResource {
         return Response.status(200).entity(created).build();
     }
 
-    @RolesAllowed("nurse")
+    @RolesAllowed("pharmatech")
     @PUT
     @Path("/{id}")
-    public Response updatePatient(@PathParam("id") final String id, final UpdateStockDTO dto) {
+    public Response updateStockItem(@PathParam("id") final String id, final UpdateStockDTO dto) {
         Stock updatedStockItem = StockAccess.instance().updateStockItem(dto);
         if (updatedStockItem == null) {
             return Response.status(500).build();
