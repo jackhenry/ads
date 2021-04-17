@@ -65,7 +65,6 @@ public class PatientAccess {
             statement = connection.createStatement();
             String sql = "SELECT * FROM patient ORDER BY " + orderBy + " " + order + " LIMIT "
                     + limit + " OFFSET " + start;
-            System.out.println(sql);
             resultSet = statement.executeQuery(sql);
 
             ArrayList<Patient> employeesList = new ArrayList<Patient>();
@@ -134,7 +133,6 @@ public class PatientAccess {
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
             String sql = "UPDATE patient SET discharge_date='" + timestamp.toString()
                     + "' WHERE patient_id=" + id;
-            System.out.println(sql);
             connection = DatabaseConnection.instance();
             updateStatement = connection.createStatement();
             updateStatement.executeUpdate(sql);

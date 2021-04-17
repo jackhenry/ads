@@ -64,7 +64,6 @@ public class StockAccess {
             statement = connection.createStatement();
             String sql = "SELECT * FROM stock ORDER BY " + orderBy + " " + order + " LIMIT " + limit
                     + " OFFSET " + start;
-            System.out.println(sql);
             resultSet = statement.executeQuery(sql);
 
             ArrayList<Stock> stockList = new ArrayList<Stock>();
@@ -122,7 +121,6 @@ public class StockAccess {
             insertStatement.setInt(3, threshold);
             insertStatement.setTimestamp(4, expirationDate);
             insertStatement.executeUpdate();
-            System.out.println("Created drug id: " + drugId);
             return getStockItemById(drugId + "");
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();

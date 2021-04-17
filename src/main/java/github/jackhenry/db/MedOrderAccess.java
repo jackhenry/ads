@@ -72,7 +72,6 @@ public class MedOrderAccess {
             statement = connection.createStatement();
             String sql = "SELECT * FROM medication_order ORDER BY " + orderBy + " " + order
                     + " LIMIT " + limit + " OFFSET " + start;
-            System.out.println(sql);
             resultSet = statement.executeQuery(sql);
 
             ArrayList<MedicationOrder> medOrderList = new ArrayList<MedicationOrder>();
@@ -134,7 +133,6 @@ public class MedOrderAccess {
             keys = insertStatement.getGeneratedKeys();
             keys.next();
             int orderId = keys.getInt(1);
-            System.out.println("Created order id: " + orderId);
             return getMedOrderById(orderId + "");
         } catch (SQLException | NamingException ex) {
             ex.printStackTrace();
@@ -187,7 +185,6 @@ public class MedOrderAccess {
             statement = connection.createStatement();
             // Get the record being deleted
             MedicationOrder medOrder = getMedOrderById(id);
-            System.out.println("Med order: " + medOrder.getDrugId());
             String sql = "DELETE FROM medication_order WHERE order_id=" + id;
             statement.executeUpdate(sql);
             return medOrder;

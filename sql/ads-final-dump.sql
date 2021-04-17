@@ -16,6 +16,44 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: ads; Type: DATABASE; Schema: -; Owner: postgres
+--
+
+CREATE DATABASE ads WITH TEMPLATE = template0 ENCODING = 'UTF8' LOCALE = 'en_US.utf8';
+
+
+ALTER DATABASE ads OWNER TO postgres;
+
+\connect ads
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: public; Type: SCHEMA; Schema: -; Owner: postgres
+--
+
+CREATE SCHEMA public;
+
+
+ALTER SCHEMA public OWNER TO postgres;
+
+--
+-- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: postgres
+--
+
+COMMENT ON SCHEMA public IS 'standard public schema';
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -822,7 +860,7 @@ INSERT INTO public.stock (quantity, threshold, drug_expiration, drug_id) VALUES 
 -- Data for Name: token; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-INSERT INTO public.token (account_id, token) VALUES (1, 'M6vuJGIdC2_M-Sg14be1y4gz-rZwKJ6u');
+INSERT INTO public.token (account_id, token) VALUES (1, 'Jx5gCAvFSuU0FyWpEr_yoTNaMG8xkBBn');
 
 
 --

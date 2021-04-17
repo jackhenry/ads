@@ -40,7 +40,6 @@ public class DatabaseAccess {
          statement = connection.createStatement();
          String sql = "SELECT * FROM all_employees ORDER BY " + orderBy + " " + order + " LIMIT "
                + limit + " OFFSET " + start;
-         System.out.println(sql);
          resultSet = statement.executeQuery(sql);
 
          ArrayList<Employee> employeesList = new ArrayList<>();

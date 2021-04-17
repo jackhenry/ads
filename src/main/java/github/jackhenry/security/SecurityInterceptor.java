@@ -54,8 +54,6 @@ public class SecurityInterceptor implements ContainerRequestFilter {
             if (method.isAnnotationPresent(RolesAllowed.class)) {
                 RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
                 Set<String> roleSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
-                System.out.println("Accepted roles: " + roleSet.toString());
-                System.out.println("User role: " + userRole);
                 if (!roleSet.contains(userRole)) {
                     requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED)
                             .entity("Insufficient permissions to access this resource").build());

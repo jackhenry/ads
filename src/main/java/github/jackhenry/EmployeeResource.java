@@ -1,7 +1,6 @@
 package github.jackhenry;
 
 import java.util.List;
-import javax.annotation.security.DenyAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;

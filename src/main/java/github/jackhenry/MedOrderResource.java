@@ -83,10 +83,8 @@ public class MedOrderResource {
         MedicationOrder deletedMedOrder = MedOrderAccess.instance().deleteMedOrder(id);
 
         if (deletedMedOrder == null) {
-            System.out.println("Null");
             return Response.status(500).build();
         }
-        System.out.println("Returning");
         return Response.status(200).entity(deletedMedOrder).build();
     }
 

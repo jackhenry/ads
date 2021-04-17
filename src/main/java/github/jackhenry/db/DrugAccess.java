@@ -40,7 +40,6 @@ public class DrugAccess {
             statement = connection.createStatement();
             String sql = "SELECT * FROM drug ORDER BY " + orderBy + " " + order + " LIMIT " + limit
                     + " OFFSET " + start;
-            System.out.println(sql);
             resultSet = statement.executeQuery(sql);
 
             ArrayList<Drug> drugList = new ArrayList<>();

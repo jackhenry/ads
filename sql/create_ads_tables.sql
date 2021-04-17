@@ -1,16 +1,5 @@
 SET TIMEZONE = 'America/Chicago';
 
-DROP TABLE IF EXISTS pharmatech CASCADE;
-DROP TABLE IF EXISTS nurse;
-DROP TABLE IF EXISTS medication_order;
-DROP TABLE IF EXISTS doctor;
-DROP TABLE IF EXISTS account CASCADE;
-DROP TABLE IF EXISTS employee;
-DROP TABLE IF EXISTS patient;
-DROP TABLE IF EXISTS stock;
-DROP TABLE IF EXISTS drug;
-DROP TABLE IF EXISTS token;
-
 CREATE TABLE Employee (
     employee_id      SERIAL PRIMARY KEY,
     firstname       TEXT NOT NULL,
